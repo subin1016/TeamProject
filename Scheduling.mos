@@ -1,0 +1,38 @@
+model Scheduling
+  options noimplicit
+  uses "mmxprs"
+
+  declarations
+    NT = 12
+    TIMES = 0..NT-1
+
+    REQ : array(TIMES) of integer
+    start : array(TIMES) of mpvar
+    reqConstr : array(TIMES) of linctr
+    minTotal : linctr
+  end-declarations
+
+  initialisations from "input.txt"
+    REQ
+  end-initialisations
+
+  minTotal := sum(t in TIMES) start(t)
+  
+  forall(t in TIMES)
+    if t=0 then
+      reqConstr(t) := start(t) >= REQ(t)
+    elif t=1 then
+      reqConstr(t) := start(t) + start(t-1) >= REQ(t)
+    elif t=2 then
+      reqConstr(t) := start(t) + start(t-1) + start(t-2) >= REQ(t)
+    else 
+      reqConstr(t) := start(t) + start(t-1) + start(t-2) + start(t-3) >= REQ(t)
+    end-if
+  
+  minimise(minTotal)
+  
+  writeln("하루 최소 근무 인원 : ",getobjval)
+  
+  forall(t in TIMES)
+    writeln(t,"시간에 근무를 시작하는 알바생:",getsol(start(t)))
+end-model
